@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  boardgame-browser:
+    build: .
+    ports:
+      - "3002:80"
+    container_name: boardgame-collection-browser
+    restart: unless-stopped
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./script.js:/usr/share/nginx/html/script.js:ro
+      - ./styles.css:/usr/share/nginx/html/styles.css:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
