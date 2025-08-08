@@ -175,29 +175,45 @@ function setupCacheModal() {
     const useCacheBtn = document.getElementById('useCacheBtn');
     const fetchFreshBtn = document.getElementById('fetchFreshBtn');
     
+    // Ensure modal starts hidden
+    modal.classList.add('hidden');
+    
     let resolveModal = null;
     
     useCacheBtn.addEventListener('click', () => {
+        console.log('Use cache button clicked');
         modal.classList.add('hidden');
-        if (resolveModal) resolveModal(true);
+        if (resolveModal) {
+            resolveModal(true);
+            resolveModal = null;
+        }
     });
     
     fetchFreshBtn.addEventListener('click', () => {
+        console.log('Fetch fresh button clicked');
         modal.classList.add('hidden');
-        if (resolveModal) resolveModal(false);
+        if (resolveModal) {
+            resolveModal(false);
+            resolveModal = null;
+        }
     });
     
     // Close on backdrop click
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
+            console.log('Modal backdrop clicked');
             modal.classList.add('hidden');
-            if (resolveModal) resolveModal(false);
+            if (resolveModal) {
+                resolveModal(false);
+                resolveModal = null;
+            }
         }
     });
     
     // Export function to show modal
     window.showCacheModal = function(username, cacheAge, gameCount) {
         return new Promise((resolve) => {
+            console.log('Showing cache modal for', username);
             resolveModal = resolve;
             const hours = Math.floor(cacheAge / (1000 * 60 * 60));
             const ageText = hours < 1 ? 'just now' : 
@@ -207,7 +223,9 @@ function setupCacheModal() {
             document.getElementById('cacheModalText').textContent = 
                 `Found cached collection for ${username} with ${gameCount} games (updated ${ageText}). Load from cache or fetch fresh data with latest weights?`;
             
+            // Ensure modal is visible
             modal.classList.remove('hidden');
+            console.log('Cache modal should now be visible');
         });
     };
 }
@@ -304,13 +322,18 @@ async function loadCollection(username = null) {
     if (cached && cached.games) {
         const cacheAge = Date.now() - cached.timestamp;
         
-        const useCache = await showCacheModal(username, cacheAge, cached.games.length);
-        if (useCache) {
-            allGames = cached.games;
-            showCollection();
-            displayStats();
-            applyFiltersAndSort();
-            return;
+        try {
+            const useCache = await showCacheModal(username, cacheAge, cached.games.length);
+            if (useCache) {
+                allGames = cached.games;
+                showCollection();
+                displayStats();
+                applyFiltersAndSort();
+                return;
+            }
+        } catch (error) {
+            console.error('Error showing cache modal:', error);
+            // Continue with fresh fetch if modal fails
         }
     }
     
