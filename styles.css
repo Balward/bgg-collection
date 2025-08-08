@@ -655,12 +655,13 @@ svg[stroke="currentColor"] {
 
 /* Modal content should be sized properly */
 #cacheModal > div {
-  max-width: 28rem;
+  max-width: 24rem;
   width: 90%;
-  max-height: 90vh;
+  max-height: 70vh;
   overflow-y: auto;
   position: relative;
   z-index: 10000;
+  margin: auto;
 }
 
 /* Fixed positioning utility */
