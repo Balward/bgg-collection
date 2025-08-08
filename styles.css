@@ -631,3 +631,24 @@ svg[stroke="currentColor"] {
 
 /* Text transform utilities */
 .uppercase { text-transform: uppercase; }
+
+/* Modal specific styling */
+#cacheModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+}
+
+#cacheModal.hidden {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Fixed positioning utility */
+.fixed { position: fixed !important; }
+.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+.z-50 { z-index: 50; }
