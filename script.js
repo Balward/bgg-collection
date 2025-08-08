@@ -104,9 +104,16 @@ async function loadCollectionFromCache(username) {
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
         try {
+            // Check if the cached data looks like JSON
+            if (!cached.trim().startsWith('{') && !cached.trim().startsWith('[')) {
+                console.warn('localStorage data is not JSON for', username, 'Data:', cached.substring(0, 100));
+                localStorage.removeItem(cacheKey);
+                return null;
+            }
             return JSON.parse(cached);
         } catch (e) {
-            console.warn('Failed to parse localStorage data for', username);
+            console.warn('Failed to parse localStorage data for', username, 'Error:', e.message);
+            console.warn('Cached data preview:', cached.substring(0, 200));
             localStorage.removeItem(cacheKey);
         }
     }
@@ -213,7 +220,7 @@ function setupCacheModal() {
     // Export function to show modal
     window.showCacheModal = function(username, cacheAge, gameCount) {
         return new Promise((resolve) => {
-            console.log('Showing cache modal for', username);
+            console.log('Showing cache modal for', username, 'gameCount:', gameCount);
             resolveModal = resolve;
             const hours = Math.floor(cacheAge / (1000 * 60 * 60));
             const ageText = hours < 1 ? 'just now' : 
@@ -223,15 +230,57 @@ function setupCacheModal() {
             document.getElementById('cacheModalText').textContent = 
                 `Found cached collection for ${username} with ${gameCount} games (updated ${ageText}). Load from cache or fetch fresh data with latest weights?`;
             
-            // Ensure modal is visible
+            // Force show modal with multiple methods
             modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            
+            console.log('Modal display style:', modal.style.display);
+            console.log('Modal classes:', modal.className);
             console.log('Cache modal should now be visible');
+            
+            // Timeout fallback in case buttons don't work
+            setTimeout(() => {
+                if (resolveModal) {
+                    console.log('Modal timeout - defaulting to fetch fresh');
+                    resolveModal(false);
+                    resolveModal = null;
+                    modal.classList.add('hidden');
+                    modal.style.display = 'none';
+                }
+            }, 30000); // 30 second timeout
         });
     };
 }
 
+// Clear corrupted cache data
+function clearCorruptedCache() {
+    console.log('Clearing potentially corrupted cache data...');
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('bgg_collection_')) {
+            const data = localStorage.getItem(key);
+            if (data && (!data.trim().startsWith('{') && !data.trim().startsWith('['))) {
+                keysToRemove.push(key);
+            }
+        }
+    }
+    keysToRemove.forEach(key => {
+        console.log('Removing corrupted cache:', key);
+        localStorage.removeItem(key);
+    });
+    if (keysToRemove.length > 0) {
+        console.log('Cleared', keysToRemove.length, 'corrupted cache entries');
+    }
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', async function() {
+    // Clear any corrupted cache data first
+    clearCorruptedCache();
+    
     // Check API server availability first
     await checkApiAvailability();
     
