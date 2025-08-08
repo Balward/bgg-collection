@@ -640,6 +640,11 @@ svg[stroke="currentColor"] {
   width: 100vw;
   height: 100vh;
   z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 #cacheModal.hidden {
@@ -648,7 +653,21 @@ svg[stroke="currentColor"] {
   visibility: hidden !important;
 }
 
+/* Modal content should be sized properly */
+#cacheModal > div {
+  max-width: 28rem;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  z-index: 10000;
+}
+
 /* Fixed positioning utility */
 .fixed { position: fixed !important; }
 .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
 .z-50 { z-index: 50; }
+
+/* Additional modal utilities */
+.max-w-md { max-width: 28rem !important; }
+.w-full { width: 100% !important; }
